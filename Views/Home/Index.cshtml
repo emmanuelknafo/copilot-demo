@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Welcome to TodoApp";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to TodoApp</h1>
+    <p class="lead">Manage your tasks efficiently with our simple and elegant todo application.</p>
+    <hr class="my-4">
+    <p>Get started by viewing your tasks or creating a new one.</p>
+    <a asp-controller="Todo" asp-action="Index" class="btn btn-primary btn-lg">
+        <i class="fas fa-tasks me-2"></i>View My Tasks
+    </a>
+    <a asp-controller="Todo" asp-action="Create" class="btn btn-outline-primary btn-lg ms-2">
+        <i class="fas fa-plus me-2"></i>Create New Task
+    </a>
+</div>

@@ -6,7 +6,7 @@ namespace TodoApp.Controllers
     {
         public IActionResult Index()
         {
-            return RedirectToAction("Index", "Todo");
+            return View();
         }
     }
 }
