@@ -1,0 +1,171 @@
+@model IEnumerable<TodoItem>
+
+@{
+    ViewData["Title"] = "Todo List";
+    var totalTasks = Model.Count();
+    var completedTasks = Model.Count(t => t.IsCompleted);
+    var pendingTasks = totalTasks - completedTasks;
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-tasks me-2"></i>My Tasks</h2>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add New Task
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-list fa-2x me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-0">Total Tasks</h5>
+                        <h3 class="mb-0">@totalTasks</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-clock fa-2x me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-0">Pending</h5>
+                        <h3 class="mb-0">@pendingTasks</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-check fa-2x me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-0">Completed</h5>
+                        <h3 class="mb-0">@completedTasks</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">Filters</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="btn-group me-2" role="group">
+                            <a asp-action="Index" class="btn @(ViewBag.Filter == null ? "btn-primary" : "btn-outline-primary")">All</a>
+                            <a asp-action="Index" asp-route-filter="pending" class="btn @(ViewBag.Filter == "pending" ? "btn-primary" : "btn-outline-primary")">Pending</a>
+                            <a asp-action="Index" asp-route-filter="completed" class="btn @(ViewBag.Filter == "completed" ? "btn-primary" : "btn-outline-primary")">Completed</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="btn-group" role="group">
+                            <a asp-action="Index" asp-route-filter="@ViewBag.Filter" class="btn @(ViewBag.PriorityFilter == null ? "btn-secondary" : "btn-outline-secondary")">All Priorities</a>
+                            <a asp-action="Index" asp-route-filter="@ViewBag.Filter" asp-route-priorityFilter="@Priority.High" class="btn @(ViewBag.PriorityFilter?.ToString() == "High" ? "btn-danger" : "btn-outline-danger")">High</a>
+                            <a asp-action="Index" asp-route-filter="@ViewBag.Filter" asp-route-priorityFilter="@Priority.Medium" class="btn @(ViewBag.PriorityFilter?.ToString() == "Medium" ? "btn-warning" : "btn-outline-warning")">Medium</a>
+                            <a asp-action="Index" asp-route-filter="@ViewBag.Filter" asp-route-priorityFilter="@Priority.Low" class="btn @(ViewBag.PriorityFilter?.ToString() == "Low" ? "btn-success" : "btn-outline-success")">Low</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Todo Items -->
+<div class="row">
+    <div class="col-12">
+        @if (!Model.Any())
+        {
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No tasks found</h4>
+                    <p class="text-muted">Start by creating your first task!</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Create Task
+                    </a>
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                <div class="card mb-3 card-hover priority-@item.Priority.ToString().ToLower() @(item.IsCompleted ? "todo-item-completed" : "")">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-1 text-center">
+                                <form asp-action="ToggleComplete" method="post" style="display: inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-link p-0">
+                                        @if (item.IsCompleted)
+                                        {
+                                            <i class="fas fa-check-circle text-success fa-lg"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="far fa-circle text-muted fa-lg"></i>
+                                        }
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-md-7">
+                                <h5 class="card-title mb-1 @(item.IsCompleted ? "text-muted" : "")">@item.Title</h5>
+                                @if (!string.IsNullOrEmpty(item.Description))
+                                {
+                                    <p class="card-text text-muted">@item.Description</p>
+                                }
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>Created: @item.CreatedAt.ToString("MMM dd, yyyy")
+                                    @if (item.CompletedAt.HasValue)
+                                    {
+                                        <span class="ms-3">
+                                            <i class="fas fa-check me-1"></i>Completed: @item.CompletedAt.Value.ToString("MMM dd, yyyy")
+                                        </span>
+                                    }
+                                </small>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <span class="badge bg-@(item.Priority == Priority.High ? "danger" : item.Priority == Priority.Medium ? "warning" : "success")">
+                                    @item.Priority Priority
+                                </span>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <div class="btn-group" role="group">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info btn-sm" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
